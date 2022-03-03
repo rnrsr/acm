@@ -1,4 +1,4 @@
 apiVersion: v1
-Kind: namespace
+kind: namespace
 metadata:
   name: Test
