@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+data:
+  LOCAL_ROUTING_NUM: "883745000"
+  PUB_KEY_PATH: /root/.ssh/publickey
+kind: ConfigMap
+metadata:
+  name: environment-config

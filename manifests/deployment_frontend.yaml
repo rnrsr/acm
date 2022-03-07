@@ -1,0 +1,79 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    client.lifecycle.config.k8s.io/mutation: ignore
+  name: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - env:
+        - name: VERSION
+          value: v0.5.3
+        - name: PORT
+          value: "8080"
+        - name: ENABLE_TRACING
+          value: "true"
+        - name: SCHEME
+          value: http
+        - name: LOG_LEVEL
+          value: info
+        - name: DEFAULT_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              key: DEMO_LOGIN_USERNAME
+              name: demo-data-config
+        - name: DEFAULT_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              key: DEMO_LOGIN_PASSWORD
+              name: demo-data-config
+        envFrom:
+        - configMapRef:
+            name: environment-config
+        - configMapRef:
+            name: service-api-config
+        image: gcr.io/bank-of-anthos-ci/frontend:v0.5.3
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 30
+        name: front
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
+        volumeMounts:
+        - mountPath: /root/.ssh
+          name: publickey
+          readOnly: true
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      volumes:
+      - name: publickey
+        secret:
+          items:
+          - key: jwtRS256.key.pub
+            path: publickey
+          secretName: jwt-key

@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+data:
+  DEMO_LOGIN_PASSWORD: password
+  DEMO_LOGIN_USERNAME: testuser
+  USE_DEMO_DATA: "True"
+kind: ConfigMap
+metadata:
+  name: demo-data-config

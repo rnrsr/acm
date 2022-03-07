@@ -1,0 +1,71 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    client.lifecycle.config.k8s.io/mutation: ignore
+  name: userservice
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: userservice
+  template:
+    metadata:
+      labels:
+        app: userservice
+    spec:
+      containers:
+      - env:
+        - name: VERSION
+          value: v0.5.3
+        - name: PORT
+          value: "8080"
+        - name: ENABLE_TRACING
+          value: "true"
+        - name: TOKEN_EXPIRY_SECONDS
+          value: "3600"
+        - name: PRIV_KEY_PATH
+          value: /root/.ssh/privatekey
+        - name: LOG_LEVEL
+          value: info
+        envFrom:
+        - configMapRef:
+            name: environment-config
+        - configMapRef:
+            name: accounts-db-config
+        image: gcr.io/bank-of-anthos-ci/userservice:v0.5.3
+        name: userservice
+        ports:
+        - containerPort: 8080
+          name: http-server
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
+        volumeMounts:
+        - mountPath: /root/.ssh
+          name: keys
+          readOnly: true
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      volumes:
+      - name: keys
+        secret:
+          items:
+          - key: jwtRS256.key
+            path: privatekey
+          - key: jwtRS256.key.pub
+            path: publickey
+          secretName: jwt-key
