@@ -5,3 +5,8 @@ helmCharts:
   version: v1.5.3
   releaseName: my-cert-manager
   namespace: cert-manager
+- name: bank-of-anthos
+  repo: https://lseg-dev-helm-charts.storage.googleapis.com
+  version: 0.1.0
+  releaseName: bank-of-anthos
+  namespace: default
